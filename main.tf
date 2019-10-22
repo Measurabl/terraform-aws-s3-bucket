@@ -16,7 +16,23 @@ resource "aws_s3_bucket" "default" {
   acl           = try(length(var.grants), 0) == 0 ? var.acl : null
   force_destroy = var.force_destroy
   policy        = var.policy
-  tags          = module.this.tags
+  dynamic "cors_rule" {
+    for_each = [for rule in var.cors_rules : {
+      allowed_methods = rule.allowed_methods
+      allowed_origins = rule.allowed_origins
+      allowed_headers = lookup(rule, "allowed_headers", null)
+      expose_headers  = lookup(rule, "expose_headers", null)
+      max_age_seconds = lookup(rule, "max_age_seconds", null)
+    }]
+
+    content {
+      allowed_methods = cors_rule.value.allowed_methods
+      allowed_origins = cors_rule.value.allowed_origins
+      allowed_headers = cors_rule.value.allowed_headers
+      expose_headers  = cors_rule.value.expose_headers
+      max_age_seconds = cors_rule.value.max_age_seconds
+    }
+  }
 
   versioning {
     enabled = var.versioning_enabled
