@@ -45,6 +45,12 @@ variable "policy" {
   description = "A valid bucket policy JSON document. Note that if the policy document is not specific enough (but still valid), Terraform may view the policy as constantly changing in a terraform plan. In this case, please make sure you use the verbose/specific version of the policy"
 }
 
+variable "cors_rules" {
+  type        = list
+  default     = []
+  description = "A list of map(s) of CORS parameters to set on the bucket. See the documentation for the 'aws_s3_bucket' resource."
+}
+
 variable "region" {
   type        = string
   default     = ""
