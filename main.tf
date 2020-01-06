@@ -1,18 +1,19 @@
-module "default_label" {
-  source              = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.14.1"
-  enabled             = var.enabled
-  namespace           = var.namespace
-  stage               = var.stage
-  name                = var.name
-  delimiter           = var.delimiter
-  attributes          = var.attributes
-  tags                = var.tags
+module "label" {
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  enabled     = var.enabled
+  namespace   = var.namespace
+  environment = var.environment
+  stage       = var.stage
+  name        = var.name
+  delimiter   = var.delimiter
+  attributes  = var.attributes
+  tags        = var.tags
   regex_replace_chars = "/[^a-zA-Z0-9-\\.]/"
 }
 
 resource "aws_s3_bucket" "default" {
   count         = var.enabled ? 1 : 0
-  bucket        = module.default_label.id
+  bucket        = module.label.id
   acl           = var.acl
   region        = var.region
   force_destroy = var.force_destroy
@@ -40,10 +41,10 @@ resource "aws_s3_bucket" "default" {
   }
 
   lifecycle_rule {
-    id      = module.default_label.id
+    id      = module.label.id
     enabled = var.lifecycle_rule_enabled
     prefix  = var.prefix
-    tags    = module.default_label.tags
+    tags    = module.label.tags
 
     noncurrent_version_transition {
       days          = var.noncurrent_version_transition_days
@@ -66,13 +67,14 @@ resource "aws_s3_bucket" "default" {
     }
   }
 
-  tags = module.default_label.tags
+  tags = module.label.tags
 }
 
 module "s3_user" {
-  source       = "git::https://github.com/cloudposse/terraform-aws-iam-s3-user.git?ref=tags/0.4.0"
+  source       = "git::https://github.com/cloudposse/terraform-aws-iam-s3-user.git?ref=tags/0.5.0"
   namespace    = var.namespace
   stage        = var.stage
+  environment  = var.environment
   name         = var.name
   attributes   = var.attributes
   tags         = var.tags
